@@ -1,0 +1,141 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct stack
+{
+    char *arr;
+    int size;
+    int top;
+}*st;
+
+int isoperator(char c)
+{
+    if(c == '+' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')')
+        return 1;
+    else
+        return 0;
+}
+
+int prec(char c)
+{
+    if(c=='+' || c=='-')
+        return 1;
+    else if(c=='*' || c=='/')
+        return 2;
+    else
+        return -1;
+}
+
+char peek(struct stack *st)
+{
+    char val = st->arr[st->top];
+    return val;
+}
+
+int isempty(struct stack *st)
+{
+    if(st->top == -1)
+        return 1;
+    else
+        return 0;
+}
+
+void push(struct stack *st, char c)
+{
+    st->top = st->top + 1;
+    st->arr[st->top] = c;
+}
+
+char pop(struct stack *st)
+{
+    char val = st->arr[st->top];
+    st->top--;
+    return val;
+}
+
+void reverse(char exp[])
+{
+    int n = strlen(exp);
+    char temp[n];
+    int i=0,k=n;
+    temp[k] = '\0';
+    k--;
+    while(exp[i] != '\0')
+    {
+        temp[k] = exp[i];
+    if(exp[i]==')')
+    {
+        temp[k]='(';
+    }
+    else if(exp[i] =='(')
+    {
+        temp[k] = ')';
+    }
+    i++;
+        k--;
+    }
+    strcpy(exp, temp);
+}
+
+int intopre(char exp[])
+{
+    int i,k,m=0,P,e,d;
+    st = (struct stack*)malloc(sizeof(struct stack));
+    int n = strlen(exp);
+    st->size = n;
+    st->top = -1;
+    st->arr = (char*)malloc(st->size * sizeof(char));
+    char rev[20],post[20],final[20];
+    reverse(exp);
+    printf("%s\n",exp);
+    for(int j=0; exp[j]; j++)
+    {
+        if(!isoperator(exp[j]))
+        {
+            post[++m] = exp[j];
+        }
+        else if(exp[j] == '(')
+        {
+            push(st,exp[j]);
+        }
+        else if(exp[j] == ')')
+        {
+            while(!isempty(st) && peek(st) != '(')
+            {
+                post[++m] = pop(st);
+            }
+            if(!isempty(st) && peek(st) != '(')
+            {
+                return -1;
+            }
+            else
+            {
+                pop(st);
+            }
+        }
+        else
+        {
+            while(!isempty(st) && (prec(exp[j]) < prec(peek(st))))
+            {
+                post[++m] = pop(st);
+            }
+                push(st,exp[j]);
+        }
+    }
+    while(!isempty(st))
+    {
+        post[++m] = pop(st);
+    }
+    post[++m] = '\0';
+    printf("%s\n",post);
+    reverse(post);
+    printf("%s",post);
+}
+
+int main()
+{
+    char exp[]="((a/b)+c)-(d+(e*f))";
+    intopre(exp);
+    return 0;
+}
